@@ -40,6 +40,12 @@ bash download_spider.sh    # baixa Spider (c/ bancos .sqlite) + test-suite-sql-e
 bash download_models.sh    # Qwen2.5-Coder-7B, DeepSeek-Coder-6.7B, SQLCoder-7B-2
 ```
 
+### 3b. Subset estratificado de avaliação (não precisa de GPU)
+
+```bash
+python src/build_subset.py    # gera data/subset/ (200 queries: 70E/70M/35H/25X, seed=42)
+```
+
 > **NatSQL:** *não é necessário rodar* o `check_and_preprocess.sh`. As representações
 > intermediárias já estão embutidas nos prompts do `DIN-SQL.py`. (Detalhe em [Notas](#-notas).)
 
@@ -59,12 +65,18 @@ python src/din_sql.py \
     --output pred_smoke.sql \
     --limit 5
 
-# run completo (sobre o dev.json inteiro)
-python src/din_sql.py --dataset data/spider_data/ --output pred_dev.sql
+# run sobre o subset estratificado (200 queries)
+python src/din_sql.py --dataset data/subset/ --output pred_subset.sql
 ```
 
 O modelo é **auto-detectado** via `/models`; para fixar, use `--model <nome>`.
 Teste rápido da conexão com o servidor: `python src/llm_client.py`.
+
+### 6. Avaliar (EX + EM por dificuldade)
+
+```bash
+bash run_eval.sh pred_subset.sql      # usa data/subset/dev_gold.sql por default
+```
 
 ---
 
@@ -78,9 +90,11 @@ replicacao/
 ├── download_spider.sh              # [Dia 1] baixa Spider + avaliador EX/EM
 ├── download_models.sh              # [Dia 1] baixa os 3 modelos do HF
 ├── serve_vllm.sh                   # [Dia 2] sobe o servidor vLLM
+├── run_eval.sh                     # [Dia 3] avalia EX/EM (wrapper do avaliador oficial)
 ├── src/
 │   ├── llm_client.py               # [Dia 2] wrapper vLLM (OpenAI-compatible)
-│   └── din_sql.py                  # [Dia 2] DIN-SQL adaptado (API antiga -> vLLM)
+│   ├── din_sql.py                  # [Dia 2] DIN-SQL adaptado (API antiga -> vLLM)
+│   └── build_subset.py             # [Dia 3] subset estratificado (200, seed=42)
 ├── Few-shot-NL2SQL-with-prompting/ # repo original do DIN-SQL (código + prompts)
 ├── NatSQL/                         # repo NatSQL (não usado em inferência)
 ├── data/                           # (criado) Spider + test-suite-sql-eval
@@ -94,7 +108,7 @@ replicacao/
 
 - [x] **Dia 1 — Setup & dados:** scripts de ambiente, download do Spider e dos modelos.
 - [x] **Dia 2 — Adaptação do código:** `src/llm_client.py` (API antiga → endpoint vLLM) + `src/din_sql.py` refatorado + `serve_vllm.sh`.
-- [ ] **Dia 3 — Subset & métricas:** subset estratificado (200, seed=42) + avaliação EX/EM ligada · *smoke test*.
+- [x] **Dia 3 — Subset & métricas:** subset estratificado (200, seed=42) gerado + avaliação EX/EM validada (gold-vs-gold = 100%). *Falta só o smoke test de inferência real (precisa do servidor vLLM na GPU).*
 - [ ] **Dias 4–5 — Baseline:** reprodução por dificuldade vs. paper.
 - [ ] **Dias 6–7 — Ablation:** 5 configurações (Tabela 5).
 - [ ] **Dias 8–9 — Extensão A:** comparação de 3 backbones.
@@ -134,4 +148,4 @@ python3 evaluation.py \
 
 ---
 
-*README atualizado incrementalmente conforme o projeto avança. Última etapa concluída: **Dia 2**.*
+*README atualizado incrementalmente conforme o projeto avança. Última etapa concluída: **Dia 3** (subset + avaliação validados sem GPU; smoke test de inferência pendente na máquina com GPU).*
