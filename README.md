@@ -43,16 +43,28 @@ bash download_models.sh    # Qwen2.5-Coder-7B, DeepSeek-Coder-6.7B, SQLCoder-7B-
 > **NatSQL:** *não é necessário rodar* o `check_and_preprocess.sh`. As representações
 > intermediárias já estão embutidas nos prompts do `DIN-SQL.py`. (Detalhe em [Notas](#-notas).)
 
-### 4. (em breve) Servir o modelo e rodar o pipeline
+### 4. Servir o modelo (deixe rodando num terminal)
 
 ```bash
-# subir o servidor vLLM (exemplo)
-python -m vllm.entrypoints.openai.api_server \
-    --model models/Qwen2.5-Coder-7B-Instruct \
-    --served-model-name qwen2.5-coder-7b \
-    --dtype auto --max-model-len 8192 --port 8000
-# ... (scripts de inferência/avaliação serão adicionados nos próximos dias)
+bash serve_vllm.sh                       # Qwen2.5-Coder-7B (default) na porta 8000
+# ou: bash serve_vllm.sh models/deepseek-coder-6.7b-instruct
 ```
+
+### 5. Rodar o pipeline DIN-SQL (em outro terminal)
+
+```bash
+# smoke test: só as 5 primeiras queries
+python src/din_sql.py \
+    --dataset data/spider_data/ \
+    --output pred_smoke.sql \
+    --limit 5
+
+# run completo (sobre o dev.json inteiro)
+python src/din_sql.py --dataset data/spider_data/ --output pred_dev.sql
+```
+
+O modelo é **auto-detectado** via `/models`; para fixar, use `--model <nome>`.
+Teste rápido da conexão com o servidor: `python src/llm_client.py`.
 
 ---
 
@@ -65,6 +77,10 @@ replicacao/
 ├── requirements.txt                # extras instalados após o vLLM
 ├── download_spider.sh              # [Dia 1] baixa Spider + avaliador EX/EM
 ├── download_models.sh              # [Dia 1] baixa os 3 modelos do HF
+├── serve_vllm.sh                   # [Dia 2] sobe o servidor vLLM
+├── src/
+│   ├── llm_client.py               # [Dia 2] wrapper vLLM (OpenAI-compatible)
+│   └── din_sql.py                  # [Dia 2] DIN-SQL adaptado (API antiga -> vLLM)
 ├── Few-shot-NL2SQL-with-prompting/ # repo original do DIN-SQL (código + prompts)
 ├── NatSQL/                         # repo NatSQL (não usado em inferência)
 ├── data/                           # (criado) Spider + test-suite-sql-eval
@@ -77,7 +93,7 @@ replicacao/
 ## 🗓️ Progresso (cronograma de 14 dias · 31/05 → 14/06)
 
 - [x] **Dia 1 — Setup & dados:** scripts de ambiente, download do Spider e dos modelos.
-- [ ] **Dia 2 — Adaptação do código:** `llm_client.py` (API antiga → endpoint vLLM) + refatoração do `DIN-SQL.py`.
+- [x] **Dia 2 — Adaptação do código:** `src/llm_client.py` (API antiga → endpoint vLLM) + `src/din_sql.py` refatorado + `serve_vllm.sh`.
 - [ ] **Dia 3 — Subset & métricas:** subset estratificado (200, seed=42) + avaliação EX/EM ligada · *smoke test*.
 - [ ] **Dias 4–5 — Baseline:** reprodução por dificuldade vs. paper.
 - [ ] **Dias 6–7 — Ablation:** 5 configurações (Tabela 5).
@@ -118,4 +134,4 @@ python3 evaluation.py \
 
 ---
 
-*README atualizado incrementalmente conforme o projeto avança. Última etapa concluída: **Dia 1**.*
+*README atualizado incrementalmente conforme o projeto avança. Última etapa concluída: **Dia 2**.*

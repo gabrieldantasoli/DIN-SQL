@@ -62,9 +62,12 @@ for repo in "${MODELS[@]}"; do
     warn "$name já presente em $dest — pulando"
     continue
   fi
+  # --exclude aceita 1 padrão por vez no CLI (Click) -> repetir o flag.
+  # Pula GGUF e pesos "original/" (duplicatas grandes), sem remover os pesos reais.
   "${HF[@]}" download "$repo" \
       --local-dir "$dest" \
-      --exclude "*.gguf" "original/*" \
+      --exclude "*.gguf" \
+      --exclude "original/*" \
       "${TOKEN_ARG[@]}"
   ok "$name -> $dest"
 done
