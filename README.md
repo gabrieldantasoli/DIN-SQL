@@ -1,0 +1,121 @@
+# Reprodução do DIN-SQL — Projeto FPCC2
+
+Reprodução de **DIN-SQL: Decomposed In-Context Learning of Text-to-SQL with Self-Correction**
+(Pourreza & Rafiei, NeurIPS 2023 — [arXiv:2304.11015](https://arxiv.org/abs/2304.11015)), trocando o
+GPT-4 por LLMs locais (custo $0) e acrescentando o **rigor estatístico** ausente no paper original.
+
+> **Autor:** Gabriel Dantas de Oliveira · **Backbone principal:** Qwen2.5-Coder-7B-Instruct via vLLM
+> **Avaliação:** subset estratificado de 200 queries do Spider dev · métricas EX e EM.
+
+---
+
+## ✅ Pré-requisitos
+
+- **GPU com ~24 GB de VRAM** (onde rodam os experimentos) + `conda`/`miniconda`.
+- ~50 GB de disco livre (modelos ~45 GB + Spider ~1 GB).
+- Acesso à internet para baixar dados e modelos.
+
+---
+
+## 🚀 Como rodar (passo a passo)
+
+Todos os comandos a partir da raiz do projeto (`replicacao/`).
+
+### 1. Ambiente
+
+```bash
+bash setup_env.sh          # cria o env conda "dinsql" (vLLM + libs)
+conda activate dinsql
+```
+
+### 2. Dados (Spider + avaliador oficial)
+
+```bash
+bash download_spider.sh    # baixa Spider (c/ bancos .sqlite) + test-suite-sql-eval
+```
+
+### 3. Modelos
+
+```bash
+bash download_models.sh    # Qwen2.5-Coder-7B, DeepSeek-Coder-6.7B, SQLCoder-7B-2
+```
+
+> **NatSQL:** *não é necessário rodar* o `check_and_preprocess.sh`. As representações
+> intermediárias já estão embutidas nos prompts do `DIN-SQL.py`. (Detalhe em [Notas](#-notas).)
+
+### 4. (em breve) Servir o modelo e rodar o pipeline
+
+```bash
+# subir o servidor vLLM (exemplo)
+python -m vllm.entrypoints.openai.api_server \
+    --model models/Qwen2.5-Coder-7B-Instruct \
+    --served-model-name qwen2.5-coder-7b \
+    --dtype auto --max-model-len 8192 --port 8000
+# ... (scripts de inferência/avaliação serão adicionados nos próximos dias)
+```
+
+---
+
+## 📂 Estrutura do projeto
+
+```
+replicacao/
+├── README.md                       # este arquivo (atualizado a cada etapa)
+├── setup_env.sh                    # [Dia 1] cria o ambiente conda
+├── requirements.txt                # extras instalados após o vLLM
+├── download_spider.sh              # [Dia 1] baixa Spider + avaliador EX/EM
+├── download_models.sh              # [Dia 1] baixa os 3 modelos do HF
+├── Few-shot-NL2SQL-with-prompting/ # repo original do DIN-SQL (código + prompts)
+├── NatSQL/                         # repo NatSQL (não usado em inferência)
+├── data/                           # (criado) Spider + test-suite-sql-eval
+├── models/                         # (criado) checkpoints dos 3 modelos
+└── 2304.11015v3.pdf                # artigo
+```
+
+---
+
+## 🗓️ Progresso (cronograma de 14 dias · 31/05 → 14/06)
+
+- [x] **Dia 1 — Setup & dados:** scripts de ambiente, download do Spider e dos modelos.
+- [ ] **Dia 2 — Adaptação do código:** `llm_client.py` (API antiga → endpoint vLLM) + refatoração do `DIN-SQL.py`.
+- [ ] **Dia 3 — Subset & métricas:** subset estratificado (200, seed=42) + avaliação EX/EM ligada · *smoke test*.
+- [ ] **Dias 4–5 — Baseline:** reprodução por dificuldade vs. paper.
+- [ ] **Dias 6–7 — Ablation:** 5 configurações (Tabela 5).
+- [ ] **Dias 8–9 — Extensão A:** comparação de 3 backbones.
+- [ ] **Dias 10–11 — Extensão B:** robustez (temperature × #few-shot, N=5).
+- [ ] **Dias 12–13 — Estatística:** McNemar, Bootstrap IC95%, Friedman+Holm, Cohen's h.
+- [ ] **Dia 14 — Entrega:** relatório técnico + repositório público.
+
+---
+
+## 📊 Avaliação (EX / EM)
+
+Depois de gerar as predições (`.sql`, uma por linha):
+
+```bash
+cd data/test-suite-sql-eval
+python3 evaluation.py \
+    --gold  ../spider_data/dev_gold.sql \
+    --pred  <suas_predicoes.sql> \
+    --db    ../spider_data/database \
+    --table ../spider_data/tables.json \
+    --etype all          # EX + EM
+```
+
+---
+
+## 📝 Notas
+
+- **Hardware:** os experimentos rodam numa máquina dedicada com GPU de **24 GB**; em 24 GB os três
+  modelos de 7B cabem (FP16 ou quantizados) via vLLM.
+- **Ordem de instalação:** o `setup_env.sh` instala o **vLLM primeiro** (ele fixa `torch`/`transformers`/`numpy`
+  casados à CUDA) e só depois os extras — evita conflito de versões.
+- **NatSQL não é usado em inferência:** o `DIN-SQL.py` não importa o NatSQL; as representações
+  intermediárias estão *hardcoded* nas demonstrações few-shot dos prompts. O `check_and_preprocess.sh`
+  só serviria para *regenerar* esses exemplos (stack legada com `spacy==2.2.3`, fora do escopo).
+- **Spider:** baixado do Google Drive oficial (Yale LILY) porque o dataset do Hugging Face não inclui
+  os bancos `.sqlite`, indispensáveis para a Execution Accuracy.
+
+---
+
+*README atualizado incrementalmente conforme o projeto avança. Última etapa concluída: **Dia 1**.*

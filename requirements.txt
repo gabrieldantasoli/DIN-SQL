@@ -1,0 +1,30 @@
+# =============================================================================
+# Extras do ambiente DIN-SQL (reprodução FPCC2)
+# -----------------------------------------------------------------------------
+# IMPORTANTE: estes pacotes são instalados DEPOIS do vLLM. O vLLM já traz
+# torch, transformers e numpy com versões casadas à CUDA — por isso NÃO
+# listamos torch/transformers/numpy aqui (evita conflito de pins). A instalação
+# é feita sem --upgrade, então o resolvedor mantém o numpy que o vLLM fixou.
+# =============================================================================
+
+# --- Núcleo de dados / código DIN-SQL ---
+pandas>=2.0,<3            # DIN-SQL.py importa pandas
+tqdm>=4.65               # barras de progresso nos runs
+requests>=2.31
+
+# --- Cliente do servidor vLLM (API OpenAI-compatible) ---
+openai>=1.30             # substitui o openai==0.27 antigo do repo
+
+# --- Avaliação Spider (EX / EM) ---
+sqlparse>=0.4            # parsing de SQL usado pelo test-suite-sql-eval
+nltk>=3.8               # dependência do avaliador oficial do Spider
+
+# --- Análise estatística (Bloco 5) ---
+scipy>=1.10              # Friedman (friedmanchisquare), bootstrap helpers
+statsmodels>=0.14        # McNemar + multipletests (Bonferroni-Holm)
+scikit-learn>=1.3        # métricas auxiliares / utilidades
+
+# --- Tabelas e gráficos (relatório) ---
+matplotlib>=3.7
+seaborn>=0.13
+tabulate>=0.9            # tabelas em markdown no relatório

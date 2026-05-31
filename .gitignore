@@ -1,0 +1,62 @@
+# =============================================================================
+# .gitignore — Reprodução DIN-SQL (FPCC2)
+# Objetivo: versionar SÓ o essencial (código, scripts, instruções, relatório
+# e resultados pequenos). Tudo que for grande ou regenerável fica de fora.
+# NOTA: comentários SEMPRE em linha própria (gitignore não aceita comentário
+#       no fim da linha do padrão).
+# =============================================================================
+
+# --- Dados (regeneráveis via download_spider.sh; ~6 GB) ---
+data/
+*.sqlite
+*.zip
+
+# --- Modelos (regeneráveis via download_models.sh; ~45 GB) ---
+models/
+*.safetensors
+*.bin
+*.gguf
+*.pt
+*.pth
+
+# --- Repos de terceiros (clonados; ver README para obter) ---
+Few-shot-NL2SQL-with-prompting/
+NatSQL/
+test-suite-sql-eval/
+
+# --- Saidas de experimentos (volumosas / volateis) ---
+# (resultados pequenos em results/ NAO sao ignorados e podem ser versionados)
+outputs/
+logs/
+predictions/
+*.log
+
+# --- Ambiente Python / conda ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+.pytest_cache/
+
+# --- Caches Hugging Face / vLLM ---
+.cache/
+hf_cache/
+.triton/
+
+# --- Documentos de referencia (nao redistribuir) ---
+2304.11015v3.pdf
+*Planejamento Projeto FPCC2.docx
+
+# --- Sistema operacional / editores ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
