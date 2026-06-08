@@ -464,6 +464,15 @@ def _parse_args():
     p.add_argument("--max-retries", type=int, default=5)
     p.add_argument("--limit", type=int, default=None,
                    help="processa apenas as N primeiras queries (smoke test / debug)")
+    # --- flags de ablation (Tabela 5 do paper) ---
+    p.add_argument("--no-schema-linking", action="store_true",
+                   help="ablation: não roda o módulo de schema linking (usa links vazios)")
+    p.add_argument("--no-self-correction", action="store_true",
+                   help="ablation: não roda o módulo de auto-correção")
+    p.add_argument("--force-class", choices=["none", "easy", "non-nested", "nested"],
+                   default="none",
+                   help="ablation: ignora a classificação e usa sempre esta classe "
+                        "(easy=few-shot simples; nested=CoT decomposto)")
     return p.parse_args()
 
 
@@ -482,6 +491,8 @@ LLM = LLMClient(
 )
 print(f"[din_sql] modelo='{LLM.model}'  endpoint={args.endpoint}  "
       f"base_url={LLM.base_url}  temperature={GEN_TEMPERATURE}")
+print(f"[din_sql] ablation: no_schema_linking={args.no_schema_linking}  "
+      f"no_self_correction={args.no_self_correction}  force_class={args.force_class}")
 
 
 def load_data(DATASET):
@@ -665,29 +676,37 @@ if __name__ == '__main__':
         print(f"index is {index}")
         print(row['query'])
         print(row['question'])
-        schema_links = None
-        while schema_links is None:
-            try:
-                schema_links = GPT4_generation(
-                    schema_linking_prompt_maker(row['question'], row['db_id']))
-            except:
-                time.sleep(3)
-                pass
-        schema_links = parse_schema_links(schema_links)
+        if args.no_schema_linking:
+            schema_links = "[]"            # ablation: sem módulo de schema linking
+        else:
+            schema_links = None
+            while schema_links is None:
+                try:
+                    schema_links = GPT4_generation(
+                        schema_linking_prompt_maker(row['question'], row['db_id']))
+                except:
+                    time.sleep(3)
+                    pass
+            schema_links = parse_schema_links(schema_links)
         #print(schema_links)
-        classification = None
-        while classification is None:
+        if args.force_class != "none":
+            # ablation: ignora a classificação e força uma classe fixa
+            classification = ""
+            predicted_class = '"%s"' % args.force_class.upper()
+        else:
+            classification = None
+            while classification is None:
+                try:
+                    classification = GPT4_generation(
+                        classification_prompt_maker(row['question'], row['db_id'], schema_links[1:]))
+                except:
+                    time.sleep(3)
+                    pass
             try:
-                classification = GPT4_generation(
-                    classification_prompt_maker(row['question'], row['db_id'], schema_links[1:]))
+                predicted_class = classification.split("Label: ")[1]
             except:
-                time.sleep(3)
-                pass
-        try:
-            predicted_class = classification.split("Label: ")[1]
-        except:
-            print("Slicing error for the classification module")
-            predicted_class = '"NESTED"'
+                print("Slicing error for the classification module")
+                predicted_class = '"NESTED"'
         #print(classification)
         if '"EASY"' in predicted_class:
             print("EASY")
@@ -725,16 +744,17 @@ if __name__ == '__main__':
         SQL = clean_sql(SQL) or "SELECT"
         print(SQL)
         sql_before = SQL  # guarda o SQL antes da auto-correção (fallback)
-        debugged_SQL = None
-        while debugged_SQL is None:
-            try:
-                debugged_SQL = GPT4_debug(debuger(row['question'], row['db_id'], SQL))
-            except:
-                time.sleep(3)
-                pass
-        # se a auto-correção não devolveu SQL (ex.: respondeu em texto), mantém o anterior
-        fixed = clean_sql(debugged_SQL)
-        SQL = fixed if fixed else sql_before
+        if not args.no_self_correction:
+            debugged_SQL = None
+            while debugged_SQL is None:
+                try:
+                    debugged_SQL = GPT4_debug(debuger(row['question'], row['db_id'], SQL))
+                except:
+                    time.sleep(3)
+                    pass
+            # se a auto-correção não devolveu SQL (ex.: respondeu em texto), mantém o anterior
+            fixed = clean_sql(debugged_SQL)
+            SQL = fixed if fixed else sql_before
         print(SQL)
         CODEX.append([row['question'], SQL, row['query'], row['db_id']])
         #break
