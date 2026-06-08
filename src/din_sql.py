@@ -622,9 +622,11 @@ def GPT4_debug(prompt):
 # para GPT-4 em estilo completion) não tratava isso, gerando SQL inválido.
 # Estas funções extraem SQL/links limpos de forma robusta.
 def clean_sql(text):
-    """Extrai uma query SQL limpa da resposta do modelo."""
+    """Extrai uma query SQL limpa da resposta do modelo.
+    Retorna "" se a resposta não contiver um SELECT plausível (ex.: o modelo
+    respondeu em linguagem natural) — o chamador decide o fallback."""
     if not text:
-        return "SELECT"
+        return ""
     t = text.strip()
     m = re.search(r"```(?:sql)?\s*(.*?)```", t, re.DOTALL | re.IGNORECASE)
     if m:
@@ -633,12 +635,11 @@ def clean_sql(text):
     if "SQL:" in t:
         t = t.split("SQL:")[-1]
     t = re.sub(r"\s+", " ", t).strip().rstrip(";").strip()
-    low = t.lower()
-    if "select" in low:
-        return t[low.index("select"):].strip()
-    if t:
-        return "SELECT " + t
-    return "SELECT"
+    # casa 'select' apenas como palavra inteira (evita pegar 'selects ...')
+    m2 = re.search(r"\bselect\b", t, re.IGNORECASE)
+    if m2:
+        return t[m2.start():].strip()
+    return ""  # não parece SQL
 
 
 def parse_schema_links(text):
@@ -721,8 +722,9 @@ if __name__ == '__main__':
                     time.sleep(3)
                     pass
         # Extrai SQL limpo da resposta (remove ```sql```, rótulos, prefixos).
-        SQL = clean_sql(SQL)
+        SQL = clean_sql(SQL) or "SELECT"
         print(SQL)
+        sql_before = SQL  # guarda o SQL antes da auto-correção (fallback)
         debugged_SQL = None
         while debugged_SQL is None:
             try:
@@ -730,7 +732,9 @@ if __name__ == '__main__':
             except:
                 time.sleep(3)
                 pass
-        SQL = clean_sql(debugged_SQL)
+        # se a auto-correção não devolveu SQL (ex.: respondeu em texto), mantém o anterior
+        fixed = clean_sql(debugged_SQL)
+        SQL = fixed if fixed else sql_before
         print(SQL)
         CODEX.append([row['question'], SQL, row['query'], row['db_id']])
         #break
