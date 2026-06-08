@@ -34,4 +34,5 @@ exec python -m vllm.entrypoints.openai.api_server \
     --dtype "$DTYPE" \
     --max-model-len "$MAX_LEN" \
     --gpu-memory-utilization "$GPU_UTIL" \
+    --trust-remote-code \
     $EXTRA_ARGS

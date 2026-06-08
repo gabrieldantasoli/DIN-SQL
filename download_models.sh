@@ -24,9 +24,11 @@ MODELS_DIR="${MODELS_DIR:-$(pwd)/models}"
 # Modelos do plano (backbone principal + 2 de extensão). Pode sobrescrever
 # passando os repo ids como argumentos.
 DEFAULT_MODELS=(
-  "Qwen/Qwen2.5-Coder-7B-Instruct"      # backbone principal
-  "deepseek-ai/deepseek-coder-6.7b-instruct"
-  "defog/sqlcoder-7b-2"
+  "Qwen/Qwen2.5-Coder-7B-Instruct"            # Alibaba (backbone principal)
+  "deepseek-ai/deepseek-coder-6.7b-instruct"  # DeepSeek
+  "01-ai/Yi-Coder-9B-Chat"                    # 01.AI
+  "ibm-granite/granite-8b-code-instruct-4k"   # IBM
+  "microsoft/Phi-3.5-mini-instruct"           # Microsoft
 )
 if [ "$#" -gt 0 ]; then MODELS=("$@"); else MODELS=("${DEFAULT_MODELS[@]}"); fi
 

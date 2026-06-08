@@ -24,7 +24,9 @@ MODELS=( "$@" )
 if [ ${#MODELS[@]} -eq 0 ]; then
   MODELS=( models/Qwen2.5-Coder-7B-Instruct \
            models/deepseek-coder-6.7b-instruct \
-           models/sqlcoder-7b-2 )
+           models/Yi-Coder-9B-Chat \
+           models/granite-8b-code-instruct-4k \
+           models/Phi-3.5-mini-instruct )
 fi
 DATASET="${DATASET:-data/subset/}"
 PORT="${PORT:-8000}"
