@@ -91,6 +91,7 @@ replicacao/
 ├── download_models.sh              # [Dia 1] baixa os 3 modelos do HF
 ├── serve_vllm.sh                   # [Dia 2] sobe o servidor vLLM
 ├── run_eval.sh                     # [Dia 3] avalia EX/EM (wrapper do avaliador oficial)
+├── run_backbones.sh                # [Ext.A] roda os 3 modelos em sequência (serve->roda->avalia)
 ├── src/
 │   ├── llm_client.py               # [Dia 2] wrapper vLLM (OpenAI-compatible)
 │   ├── din_sql.py                  # [Dia 2] DIN-SQL adaptado (API antiga -> vLLM)

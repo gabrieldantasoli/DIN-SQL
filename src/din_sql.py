@@ -1,5 +1,6 @@
 import argparse
 import os
+import re
 import sys
 import time
 
@@ -615,6 +616,43 @@ def GPT4_debug(prompt):
   return LLM.generate(prompt, temperature=GEN_TEMPERATURE, max_tokens=350,
                       stop=["#", ";", "\n\n"])
 
+
+# --- Pós-processamento das respostas (modelos Instruct via chat) ------------
+# Modelos Instruct envolvem o SQL em ```sql ... ```; o código original (feito
+# para GPT-4 em estilo completion) não tratava isso, gerando SQL inválido.
+# Estas funções extraem SQL/links limpos de forma robusta.
+def clean_sql(text):
+    """Extrai uma query SQL limpa da resposta do modelo."""
+    if not text:
+        return "SELECT"
+    t = text.strip()
+    m = re.search(r"```(?:sql)?\s*(.*?)```", t, re.DOTALL | re.IGNORECASE)
+    if m:
+        t = m.group(1)
+    t = t.replace("```", " ")
+    if "SQL:" in t:
+        t = t.split("SQL:")[-1]
+    t = re.sub(r"\s+", " ", t).strip().rstrip(";").strip()
+    low = t.lower()
+    if "select" in low:
+        return t[low.index("select"):].strip()
+    if t:
+        return "SELECT " + t
+    return "SELECT"
+
+
+def parse_schema_links(text):
+    """Extrai a lista [...] após 'schema_links:' (robusto a caixa/espaço/fences)."""
+    if not text:
+        return "[]"
+    t = text.replace("```", " ")
+    m = re.search(r"schema_links\s*:\s*(\[.*?\])", t, re.IGNORECASE | re.DOTALL)
+    if m:
+        return m.group(1).strip()
+    brackets = re.findall(r"\[[^\[\]]*\]", t)
+    return brackets[-1].strip() if brackets else "[]"
+
+
 if __name__ == '__main__':
     spider_schema,spider_primary,spider_foreign = creatiing_schema(DATASET_SCHEMA)
     val_df = load_data(DATASET)
@@ -634,11 +672,7 @@ if __name__ == '__main__':
             except:
                 time.sleep(3)
                 pass
-        try:
-            schema_links = schema_links.split("Schema_links: ")[1]
-        except:
-            print("Slicing error for the schema_linking module")
-            schema_links = "[]"
+        schema_links = parse_schema_links(schema_links)
         #print(schema_links)
         classification = None
         while classification is None:
@@ -672,14 +706,12 @@ if __name__ == '__main__':
                 except:
                     time.sleep(3)
                     pass
-            try:
-                SQL = SQL.split("SQL: ")[1]
-            except:
-                print("SQL slicing error")
-                SQL = "SELECT"
         else:
-            sub_questions = classification.split('questions = ["')[1].split('"]')[0]
             print("NESTED")
+            try:
+                sub_questions = classification.split('questions = ["')[1].split('"]')[0]
+            except:
+                sub_questions = row['question']
             SQL = None
             while SQL is None:
                 try:
@@ -688,20 +720,17 @@ if __name__ == '__main__':
                 except:
                     time.sleep(3)
                     pass
-            try:
-                SQL = SQL.split("SQL: ")[1]
-            except:
-                print("SQL slicing error")
-                SQL = "SELECT"
+        # Extrai SQL limpo da resposta (remove ```sql```, rótulos, prefixos).
+        SQL = clean_sql(SQL)
         print(SQL)
         debugged_SQL = None
         while debugged_SQL is None:
             try:
-                debugged_SQL = GPT4_debug(debuger(row['question'], row['db_id'], SQL)).replace("\n", " ")
+                debugged_SQL = GPT4_debug(debuger(row['question'], row['db_id'], SQL))
             except:
                 time.sleep(3)
                 pass
-        SQL = "SELECT " + debugged_SQL
+        SQL = clean_sql(debugged_SQL)
         print(SQL)
         CODEX.append([row['question'], SQL, row['query'], row['db_id']])
         #break
