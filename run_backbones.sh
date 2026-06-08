@@ -9,11 +9,13 @@
 # PRÉ-REQUISITO: conda activate dinsql   (modelos baixados em models/)
 #
 # USO:
-#   bash run_backbones.sh                         # os 3 modelos do plano
+#   bash run_backbones.sh                         # os 3 modelos, subset completo
+#   LIMIT=5 bash run_backbones.sh                 # SMOKE: só 5 queries por modelo
 #   bash run_backbones.sh models/sqlcoder-7b-2    # só um/alguns
 #
 # Saídas:
 #   results/pred_<modelo>.sql   results/eval_<modelo>.txt   logs/vllm_<modelo>.log
+#   (no modo smoke, sufixo _smoke nos arquivos)
 # =============================================================================
 
 set -uo pipefail   # sem -e: queremos continuar mesmo se um modelo falhar
@@ -28,6 +30,7 @@ DATASET="${DATASET:-data/subset/}"
 PORT="${PORT:-8000}"
 BASE="http://localhost:${PORT}/v1"
 READY_TIMEOUT="${READY_TIMEOUT:-900}"   # segundos p/ o servidor subir
+LIMIT="${LIMIT:-0}"                      # >0 = modo smoke (só N queries/modelo)
 
 mkdir -p results logs
 
@@ -69,13 +72,24 @@ for model in "${MODELS[@]}"; do
     echo "  [ERRO] servidor não ficou pronto p/ $name — veja logs/vllm_${name}.log"
     stop_server; continue
   fi
-  echo "  servidor pronto. Rodando DIN-SQL no subset ($DATASET) ..."
+  # modo smoke (LIMIT>0): só N queries + gold das N primeiras
+  if [ "$LIMIT" -gt 0 ]; then
+    limit_arg=(--limit "$LIMIT"); sfx="_smoke"
+    gold="results/gold_smoke_${LIMIT}.sql"
+    head -n "$LIMIT" "${DATASET%/}/dev_gold.sql" > "$gold"
+    echo "  servidor pronto. SMOKE: $LIMIT queries ..."
+  else
+    limit_arg=(); sfx=""
+    gold="${DATASET%/}/dev_gold.sql"
+    echo "  servidor pronto. Rodando DIN-SQL no subset completo ($DATASET) ..."
+  fi
+  pred="results/pred_${name}${sfx}.sql"
 
   python src/din_sql.py --dataset "$DATASET" --base-url "$BASE" \
-         --output "results/pred_${name}.sql"
+         "${limit_arg[@]}" --output "$pred"
 
   echo "  avaliando EX/EM ..."
-  bash run_eval.sh "results/pred_${name}.sql" | tee "results/eval_${name}.txt"
+  bash run_eval.sh "$pred" "$gold" | tee "results/eval_${name}${sfx}.txt"
 
   stop_server; sleep 5                        # libera VRAM antes do próximo
 done
