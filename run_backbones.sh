@@ -38,17 +38,17 @@ mkdir -p results logs
 
 stop_server() { pkill -f "vllm.entrypoints.openai.api_server" 2>/dev/null || true; }
 
-wait_ready() {  # espera o endpoint /models responder
+wait_ready() {  # espera o endpoint /models responder (usa só a stdlib do Python)
   python - "$BASE" "$READY_TIMEOUT" <<'PY'
-import sys, time
-from openai import OpenAI
+import sys, time, json, urllib.request
 base, maxs = sys.argv[1], int(sys.argv[2])
-c = OpenAI(base_url=base, api_key="EMPTY")
+url = base.rstrip("/") + "/models"
 t = 0
 while t < maxs:
     try:
-        if c.models.list().data:
-            sys.exit(0)
+        with urllib.request.urlopen(url, timeout=5) as r:
+            if json.loads(r.read().decode()).get("data"):
+                sys.exit(0)
     except Exception:
         pass
     time.sleep(5); t += 5
