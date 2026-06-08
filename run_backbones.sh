@@ -25,7 +25,7 @@ if [ ${#MODELS[@]} -eq 0 ]; then
   MODELS=( models/Qwen2.5-Coder-7B-Instruct \
            models/deepseek-coder-6.7b-instruct \
            models/Yi-Coder-9B-Chat \
-           models/granite-8b-code-instruct-4k \
+           models/granite-8b-code-instruct-128k \
            models/Phi-3.5-mini-instruct )
 fi
 DATASET="${DATASET:-data/subset/}"

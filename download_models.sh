@@ -27,7 +27,7 @@ DEFAULT_MODELS=(
   "Qwen/Qwen2.5-Coder-7B-Instruct"            # Alibaba (backbone principal)
   "deepseek-ai/deepseek-coder-6.7b-instruct"  # DeepSeek
   "01-ai/Yi-Coder-9B-Chat"                    # 01.AI
-  "ibm-granite/granite-8b-code-instruct-4k"   # IBM
+  "ibm-granite/granite-8b-code-instruct-128k"  # IBM (contexto 128k; o -4k não comporta os prompts)
   "microsoft/Phi-3.5-mini-instruct"           # Microsoft
 )
 if [ "$#" -gt 0 ]; then MODELS=("$@"); else MODELS=("${DEFAULT_MODELS[@]}"); fi
