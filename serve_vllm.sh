@@ -19,9 +19,12 @@ MODEL="${1:-${MODEL:-models/Qwen2.5-Coder-7B-Instruct}}"
 PORT="${PORT:-8000}"
 SERVED_NAME="${SERVED_NAME:-$(basename "$MODEL")}"
 MAX_LEN="${MAX_LEN:-8192}"
-GPU_UTIL="${GPU_UTIL:-0.90}"          # fração da VRAM para o vLLM
+GPU_UTIL="${GPU_UTIL:-0.80}"          # fração da VRAM p/ o vLLM (margem p/ runtime/fragmentação)
 DTYPE="${DTYPE:-auto}"                # auto | half | bfloat16 | float16
 EXTRA_ARGS="${EXTRA_ARGS:-}"          # ex.: "--quantization awq" p/ checkpoint quantizado
+
+# Reduz fragmentação de memória da GPU (recomendado pelo próprio erro de OOM do vLLM)
+export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
 
 echo "==> Servindo '$MODEL' como '$SERVED_NAME' na porta $PORT"
 echo "    max-model-len=$MAX_LEN  gpu-util=$GPU_UTIL  dtype=$DTYPE  extra='$EXTRA_ARGS'"
