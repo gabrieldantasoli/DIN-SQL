@@ -97,7 +97,9 @@ replicacao/
 ├── src/
 │   ├── llm_client.py               # [Dia 2] wrapper vLLM (OpenAI-compatible)
 │   ├── din_sql.py                  # [Dia 2] DIN-SQL adaptado (API antiga -> vLLM)
-│   └── build_subset.py             # [Dia 3] subset estratificado (200, seed=42)
+│   ├── build_subset.py             # [Dia 3] subset estratificado (200, seed=42)
+│   ├── collect_results.py          # [Bloco 5] matriz acerto/erro por query (EX)
+│   └── analyze.py                  # [Bloco 5] McNemar, Bootstrap, Friedman+Holm, Cohen's h
 ├── Few-shot-NL2SQL-with-prompting/ # repo original do DIN-SQL (código + prompts)
 ├── NatSQL/                         # repo NatSQL (não usado em inferência)
 ├── data/                           # (criado) Spider + test-suite-sql-eval

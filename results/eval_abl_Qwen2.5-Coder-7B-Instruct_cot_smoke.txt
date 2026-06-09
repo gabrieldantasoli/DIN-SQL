@@ -1,0 +1,43 @@
+==> Avaliando /home/gd/DIN-SQL/results/abl_Qwen2.5-Coder-7B-Instruct_cot_smoke.sql
+    gold=/home/gd/DIN-SQL/results/gold_smoke_1.sql  db=/home/gd/DIN-SQL/data/spider_data/database  etype=all
+                     easy                 medium               hard                 extra                all                 
+count                1                    0                    0                    0                    1                   
+=====================   EXECUTION ACCURACY     =====================
+execution            1.000                0.000                0.000                0.000                1.000               
+
+====================== EXACT MATCHING ACCURACY =====================
+exact match          1.000                0.000                0.000                0.000                1.000               
+
+---------------------PARTIAL MATCHING ACCURACY----------------------
+select               1.000                0.000                0.000                0.000                1.000               
+select(no AGG)       1.000                0.000                0.000                0.000                1.000               
+where                0.000                0.000                0.000                0.000                0.000               
+where(no OP)         0.000                0.000                0.000                0.000                0.000               
+group(no Having)     0.000                0.000                0.000                0.000                0.000               
+group                0.000                0.000                0.000                0.000                0.000               
+order                0.000                0.000                0.000                0.000                0.000               
+and/or               1.000                0.000                0.000                0.000                1.000               
+IUEN                 0.000                0.000                0.000                0.000                0.000               
+keywords             0.000                0.000                0.000                0.000                0.000               
+---------------------- PARTIAL MATCHING RECALL ----------------------
+select               1.000                0.000                0.000                0.000                1.000               
+select(no AGG)       1.000                0.000                0.000                0.000                1.000               
+where                0.000                0.000                0.000                0.000                0.000               
+where(no OP)         0.000                0.000                0.000                0.000                0.000               
+group(no Having)     0.000                0.000                0.000                0.000                0.000               
+group                0.000                0.000                0.000                0.000                0.000               
+order                0.000                0.000                0.000                0.000                0.000               
+and/or               1.000                0.000                0.000                0.000                1.000               
+IUEN                 0.000                0.000                0.000                0.000                0.000               
+keywords             0.000                0.000                0.000                0.000                0.000               
+---------------------- PARTIAL MATCHING F1 --------------------------
+select               1.000                0.000                0.000                0.000                1.000               
+select(no AGG)       1.000                0.000                0.000                0.000                1.000               
+where                1.000                0.000                0.000                0.000                1.000               
+where(no OP)         1.000                0.000                0.000                0.000                1.000               
+group(no Having)     1.000                0.000                0.000                0.000                1.000               
+group                1.000                0.000                0.000                0.000                1.000               
+order                1.000                0.000                0.000                0.000                1.000               
+and/or               1.000                0.000                0.000                0.000                1.000               
+IUEN                 1.000                0.000                0.000                0.000                1.000               
+keywords             1.000                0.000                0.000                0.000                1.000               

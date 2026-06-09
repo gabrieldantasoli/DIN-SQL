@@ -60,3 +60,9 @@ Thumbs.db
 .vscode/
 *.swp
 *~
+
+# tarballs de transferência
+*.tar.gz
+
+# config do agente
+.claude/
