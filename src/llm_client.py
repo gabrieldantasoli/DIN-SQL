@@ -37,12 +37,14 @@ class LLMClient:
         max_retries: int = 5,
         retry_wait: float = 3.0,
         timeout: float = 180.0,
+        seed: Optional[int] = None,       # seed de amostragem (robustez reproduzível)
     ):
         self.base_url = base_url or os.getenv("VLLM_BASE_URL", "http://localhost:8000/v1")
         self.api_key = api_key or os.getenv("VLLM_API_KEY", "EMPTY")
         self.endpoint = endpoint
         self.max_retries = max_retries
         self.retry_wait = retry_wait
+        self.seed = seed
         self.client = OpenAI(base_url=self.base_url, api_key=self.api_key, timeout=timeout)
 
         self.model = model or os.getenv("VLLM_MODEL", "") or self._autodetect_model()
@@ -87,6 +89,7 @@ class LLMClient:
                         top_p=top_p,
                         n=n,
                         stop=stop,
+                        seed=self.seed,
                         stream=False,
                     )
                     content = resp.choices[0].message.content
@@ -99,6 +102,7 @@ class LLMClient:
                         top_p=top_p,
                         n=n,
                         stop=stop,
+                        seed=self.seed,
                         stream=False,
                     )
                     content = resp.choices[0].text

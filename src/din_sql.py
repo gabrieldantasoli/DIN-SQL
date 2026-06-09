@@ -461,6 +461,8 @@ def _parse_args():
                    help="usar /v1/chat/completions (default) ou /v1/completions")
     p.add_argument("--temperature", type=float, default=0.0,
                    help="temperatura de geração (0.0 = greedy, como no paper)")
+    p.add_argument("--seed", type=int, default=None,
+                   help="seed de amostragem (robustez reproduzível; usado com temperature>0)")
     p.add_argument("--max-retries", type=int, default=5)
     p.add_argument("--limit", type=int, default=None,
                    help="processa apenas as N primeiras queries (smoke test / debug)")
@@ -488,6 +490,7 @@ LLM = LLMClient(
     base_url=args.base_url,
     endpoint=args.endpoint,
     max_retries=args.max_retries,
+    seed=args.seed,
 )
 print(f"[din_sql] modelo='{LLM.model}'  endpoint={args.endpoint}  "
       f"base_url={LLM.base_url}  temperature={GEN_TEMPERATURE}")

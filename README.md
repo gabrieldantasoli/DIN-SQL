@@ -93,6 +93,7 @@ replicacao/
 ├── run_eval.sh                     # [Dia 3] avalia EX/EM (wrapper do avaliador oficial)
 ├── run_backbones.sh                # [Ext.A] roda os modelos em sequência (serve->roda->avalia)
 ├── run_ablation.sh                 # [Ablation] 4 variantes (Tabela 5) num modelo, servidor 1x
+├── run_robustness.sh               # [Ext.B] robustez à temperatura (temps × N reps), servidor 1x
 ├── src/
 │   ├── llm_client.py               # [Dia 2] wrapper vLLM (OpenAI-compatible)
 │   ├── din_sql.py                  # [Dia 2] DIN-SQL adaptado (API antiga -> vLLM)
