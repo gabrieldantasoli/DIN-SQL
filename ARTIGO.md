@@ -282,7 +282,7 @@ Diversos caminhos permanecem em aberto. O mais imediato é o eixo de *few-shot*:
 
 # 8. Reprodutibilidade e disponibilidade
 
-Todo o material necessário à reprodução do estudo é de acesso público. O repositório disponibiliza: (i) o código do *pipeline* DIN-SQL adaptado e os *scripts* de execução; (ii) a definição do subset determinístico, isto é, as 200 consultas estratificadas (easy 70, medium 70, hard 35, extra 25) geradas com `seed=42` e identificadas pelo hash de verificação `153d3fccf9a49ce6`; (iii) a especificação do ambiente (`setup_env.sh`, com a versão do vLLM fixada), que fixa o *serving* em FP16 sobre a RTX 4090; (iv) os dados brutos de resultado, compostos pelas saídas por consulta e pelos relatórios do avaliador oficial `test-suite-sql-eval`; (v) as tabelas de análise estatística, em `results/analysis/`; e (vi) as sete figuras do artigo, em `results/figures/`. A própria validação da infraestrutura integra os artefatos disponibilizados: a avaliação *gold-vs-gold* retorna EX = EM = 1,000, e o *run greedy* reproduz exatamente o *baseline* de EX = 0,745.
+Todo o material necessário à reprodução do estudo é de acesso público e está reunido no repositório do projeto, disponível em <https://github.com/gabrieldantasoli/DIN-SQL>. O repositório disponibiliza: (i) o código do *pipeline* DIN-SQL adaptado e os *scripts* de execução; (ii) a definição do subset determinístico, isto é, as 200 consultas estratificadas (easy 70, medium 70, hard 35, extra 25) geradas com `seed=42` e identificadas pelo hash de verificação `153d3fccf9a49ce6`; (iii) a especificação do ambiente (`setup_env.sh`, com a versão do vLLM fixada), que fixa o *serving* em FP16 sobre a RTX 4090; (iv) os dados brutos de resultado, compostos pelas saídas por consulta e pelos relatórios do avaliador oficial `test-suite-sql-eval`; (v) as tabelas de análise estatística, em `results/analysis/`; e (vi) as sete figuras do artigo, em `results/figures/`. A própria validação da infraestrutura integra os artefatos disponibilizados: a avaliação *gold-vs-gold* retorna EX = EM = 1,000, e o *run greedy* reproduz exatamente o *baseline* de EX = 0,745.
 
 O *pipeline* de reprodução organiza-se em etapas sequenciais, uma por comando, na seguinte ordem:
 
@@ -299,7 +299,7 @@ analyze.py          # bootstrap, McNemar, Friedman+Holm, Cohen's h, Shapiro/Leve
 make_figures.py     # gera as Figuras 1 a 7
 ```
 
-Como os cenários de *backbones* e de *ablation* empregam decodificação *greedy* (temperatura 0), suas saídas são determinísticas e dispensam repetição; apenas o experimento de robustez (temperaturas 0,4 e 0,8) utiliza N = 5 repetições, com `seed=1..5`, igualmente reprodutíveis. Dispondo-se do hardware especificado, espera-se, portanto, a obtenção exata dos valores reportados nas Seções 4 a 6.
+Como os cenários de *backbones* e de *ablation* empregam decodificação *greedy* (temperatura 0), suas saídas são determinísticas e dispensam repetição; apenas o experimento de robustez (temperaturas 0,4 e 0,8) utiliza N = 5 repetições, com `seed=1..5`, igualmente reprodutíveis. Dispondo-se do hardware especificado, espera-se, portanto, a obtenção exata dos valores reportados nas Seções 4 a 6. O código, os *scripts*, o subset determinístico, a especificação do ambiente e os dados de resultado encontram-se versionados no repositório público <https://github.com/gabrieldantasoli/DIN-SQL>.
 
 # Referências
 
