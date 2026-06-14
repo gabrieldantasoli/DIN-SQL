@@ -1,4 +1,4 @@
-# Reprodução de baixo custo do DIN-SQL: quão necessário é o prompting decomposto em code-LLMs abertos modernos?
+# A Low-Cost Reproduction of DIN-SQL: How Necessary Is Decomposed Prompting for Modern Open Code-LLMs?
 
 **Gabriel Dantas de Oliveira¹, Cláudio de Souza Baptista¹ (orientador)**
 
@@ -90,6 +90,8 @@ Tratamos o estudo como três experimentos fatoriais que compartilham as mesmas v
 **Variáveis controladas.** Mantivemos constantes, em todos os cenários, o subconjunto de avaliação (as mesmas 200 consultas, `seed=42`), os *prompts* do DIN-SQL, os parâmetros de decodificação (`max_tokens` e *stop tokens*), o avaliador oficial (test-suite-sql-eval), o *hardware* (RTX 4090) e a infraestrutura de *serving* (vLLM em precisão FP16). Esse controle assegura que qualquer variação observada no EX possa ser atribuída ao fator efetivamente manipulado.
 
 ## 3.3 Desenho experimental
+
+**Conjunto de avaliação.** O conjunto de teste do Spider é um *holdout* oculto, avaliável exclusivamente pelo servidor oficial dos organizadores — tanto que o artigo original agradece nominalmente à equipe do Spider por executar seu código sobre esse conjunto, justamente por ele não ser acessível de forma autônoma. Assim, à semelhança da avaliação de *dev* do trabalho de referência e de qualquer estudo sem acesso ao servidor, restringimos nossos experimentos ao conjunto de desenvolvimento (1.034 consultas), de acesso público, adotando como alvo de comparação os números de *dev* reportados pelos autores.
 
 **Amostragem.** Em vez de avaliar todo o conjunto de desenvolvimento do Spider (1.034 consultas) — opção onerosa quando multiplicada por cinco modelos e diversas configurações —, construímos um subconjunto de 200 consultas por amostragem aleatória estratificada por dificuldade, com `random_state=42`. Os estratos resultantes são *easy* 70, *medium* 70, *hard* 35 e *extra* 25, e registramos um *hash* dos índices (`153d3fccf9a49ce6`) para garantir que qualquer reexecução opere exatamente sobre as mesmas instâncias. Cabe observar que, por privilegiarmos um número razoável de exemplos difíceis, a proporção dos estratos do subconjunto difere da do *dev* completo. Por essa razão, ao confrontar nossos resultados com os do artigo original, realizamos a comparação por dificuldade, e não pelo agregado.
 
