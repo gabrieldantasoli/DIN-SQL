@@ -1,0 +1,145 @@
+{
+ "title": "DIN-SQL de graça: trocando o GPT-4 por LLMs abertos",
+ "subtitle": "Reproduzindo um trabalho de ponta em text-to-SQL com custo US$ 0 e rigor estatístico",
+ "author": "Gabriel Dantas de Oliveira | Orientador: Claudio de Souza Baptista | COPIN/UFCG",
+ "slides": [
+  {
+   "title": "O problema 🗣️➡️🗄️",
+   "big": "Text-to-SQL = tradutor de perguntas para o banco",
+   "bullets": [
+    "❓ Você pergunta em português",
+    "🔁 A máquina traduz para SQL",
+    "😵 SQL é difícil para quem não é técnico",
+    "🎯 Meta: democratizar o acesso aos dados"
+   ],
+   "notes": "Use a analogia do tradutor: a pessoa fala em português e o computador responde em SQL. Enfatize dar acesso aos dados para quem não programa."
+  },
+  {
+   "title": "A ideia do DIN-SQL 🧩",
+   "big": "Dividir para conquistar, igual manual de montar móvel",
+   "bullets": [
+    "1️⃣ Schema linking — achar as peças certas",
+    "2️⃣ Classificar/decompor — separar por dificuldade",
+    "3️⃣ Gerar o SQL — montar a consulta",
+    "4️⃣ Auto-correção — conferir e ajustar"
+   ],
+   "notes": "Em vez de montar tudo de uma vez, o DIN-SQL segue 4 passos, como um manual de móvel. Plante a analogia aqui porque ela volta no achado central."
+  },
+  {
+   "title": "DIN-SQL brilhou... mas tem pegadinha 🌟",
+   "big": "SOTA no Spider: 85,3% test / 74,2% dev (EX)",
+   "bullets": [
+    "🏆 Pourreza & Rafiei, NeurIPS 2023",
+    "📈 Estado da arte no benchmark Spider",
+    "💳 Mas dependia do GPT-4: caro e fechado",
+    "📊 E sem nenhum teste estatístico"
+   ],
+   "notes": "Funcionou muito bem; o detalhe é COMO. Marque os dois problemas: dependência do GPT-4 (caro e fechado) e ausência de estatística. Isso planta nossa lacuna."
+  },
+  {
+   "title": "Nossa pergunta 🤔",
+   "big": "Dá pra reproduzir de graça e com rigor?",
+   "bullets": [
+    "💡 LLM aberto e local iguala o GPT-4?",
+    "🧱 Todo o scaffolding do DIN-SQL é necessário?",
+    "🆚 Qual backbone aberto se sai melhor?",
+    "📐 E com estatística de verdade por trás?"
+   ],
+   "notes": "Aqui nascem as quatro perguntas de pesquisa (H1 a H4). Leia rápido; cada uma vira um slide de resultado."
+  },
+  {
+   "title": "O que fizemos 🛠️",
+   "big": "1 GPU, 5 modelos, US$ 0",
+   "bullets": [
+    "🖥️ vLLM em 1 GPU RTX 4090 — custo US$ 0",
+    "🎯 200 queries do Spider dev (seed=42)",
+    "🧩 easy 70 / medium 70 / hard 35 / extra 25",
+    "📏 Métricas: EX e EM",
+    "🤝 5 backbones de 5 provedores"
+   ],
+   "notes": "Uma RTX 4090, cinco modelos de cinco empresas (Alibaba, DeepSeek, 01.AI, IBM, Microsoft) e estatística. Subset estratificado por dificuldade, seed fixa para reprodutibilidade."
+  },
+  {
+   "title": "Resultado 1 (H1) 🏁",
+   "big": "Empate técnico: Qwen local = GPT-4",
+   "bullets": [
+    "🥇 Qwen2.5-Coder-7B local: EX = 0,745",
+    "🤖 GPT-4 do paper: EX = 0,742",
+    "📊 IC95% [0,680; 0,805] contém 0,742",
+    "💸 Mesmo desempenho, custo zero"
+   ],
+   "image": "fig7_qwen_vs_paper.png",
+   "notes": "Resultado de maior impacto prático: o modelo local praticamente empatou com o GPT-4. O intervalo de confiança contém o valor do paper, então a diferença não é relevante. De graça."
+  },
+  {
+   "title": "Resultado 2 (H3) 🤝",
+   "big": "Três empatam, um fica pra trás",
+   "bullets": [
+    "📉 Friedman p = 0,006 → há diferença global",
+    "🤝 Qwen / DeepSeek / Yi empatam (~0,73–0,75)",
+    "🐣 Phi-3.5 (3.8B) fica atrás: 0,630",
+    "💥 Phi colapsa no hard: 0,40",
+    "🔎 Post-hoc: só Qwen vs Phi é significativo"
+   ],
+   "image": "fig1_backbones_ex.png",
+   "notes": "Há diferença global pelo Friedman, mas no detalhe vários empatam. Só Qwen contra Phi é significativo no post-hoc. O modelo menor (3.8B) cai feio nas queries difíceis."
+  },
+  {
+   "title": "Resultado 3 (H2) 🧱 ACHADO CENTRAL",
+   "big": "Parte do andaime do DIN-SQL é redundante!",
+   "bullets": [
+    "🛟 Só a auto-correção ajuda: 0,745 → 0,665 sem ela (p<0,001)",
+    "⚖️ Schema linking é neutro (p = 0,556)",
+    "✂️ Prompt simples até MELHORA: 0,790 (p = 0,049)",
+    "🧩 Em coders modernos, sobra scaffolding"
+   ],
+   "image": "fig4_ablation_ex.png",
+   "notes": "Achado central, de peso. Voltando ao móvel: sobraram peças e o móvel ficou até mais firme. Só a auto-correção contribui; schema linking não muda nada e simplificar o prompt melhora. Esse é o slide-chave da apresentação."
+  },
+  {
+   "title": "Resultado 4 (H4) 🎲",
+   "big": "Greedy é a aposta segura",
+   "bullets": [
+    "🧊 Greedy (temp = 0): estável e confiável",
+    "🔥 Temp 0,8: não melhora a média",
+    "📈 E aumenta a variância (uma corrida caiu a 0,645)",
+    "✅ Recomendação: ficar no greedy"
+   ],
+   "image": "fig6_robustez_temperatura.png",
+   "notes": "Aumentar a criatividade não compensou: a média não sobe e o resultado fica instável, com uma corrida caindo a 0,645. Para reprodução confiável, use greedy."
+  },
+  {
+   "title": "Desafios 🚧",
+   "big": "Um modelo simplesmente não rodou",
+   "bullets": [
+    "🚫 SQLCoder-7B-2 não rodou: é completion, sem chat template",
+    "💡 Reforça: o método exige instruction-following",
+    "🧠 OOM na GPU → ajuste de memória",
+    "🧹 Parsing de saídas em markdown (```sql)"
+   ],
+   "notes": "Humanize a pesquisa: nem tudo foi tranquilo. O SQLCoder, especializado em SQL, não rodou por não ter chat template — o método depende de instruction-following, habilidade emergente. Cite OOM, parsing de markdown e GPU compartilhada."
+  },
+  {
+   "title": "Conclusão e o que vem 🚀",
+   "big": "Reproduzir de graça — e ainda enxugar o método",
+   "bullets": [
+    "✅ LLM local iguala GPT-4 a custo zero",
+    "✂️ Scaffolding pode encolher (foco na auto-correção)",
+    "🔭 Futuro: dev completo (1034), BIRD, #few-shot, idiomas",
+    "🙏 Obrigado!"
+   ],
+   "notes": "Feche com a mensagem-chave: reproduzimos o GPT-4 sem custo e mostramos que dá pra simplificar o método, focando na auto-correção. Aponte os próximos passos."
+  },
+  {
+   "title": "Repositório público 🔗",
+   "big": "github.com/gabrieldantasoli/DIN-SQL",
+   "bullets": [
+    "📂 Código, configs e resultados abertos",
+    "🔁 Reprodutível: seed=42, scripts de avaliação",
+    "📊 Figuras e análise estatística incluídas",
+    "🙏 Obrigado! Perguntas?"
+   ],
+   "notes": "Slide final com o repositório. Convide a explorar o código e os resultados, e abra para perguntas."
+  }
+ ]
+}
