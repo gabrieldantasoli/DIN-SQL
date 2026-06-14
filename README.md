@@ -114,12 +114,12 @@ replicacao/
 - [x] **Dia 1 — Setup & dados:** scripts de ambiente, download do Spider e dos modelos.
 - [x] **Dia 2 — Adaptação do código:** `src/llm_client.py` (API antiga → endpoint vLLM) + `src/din_sql.py` refatorado + `serve_vllm.sh`.
 - [x] **Dia 3 — Subset & métricas:** subset estratificado (200, seed=42) gerado + avaliação EX/EM validada (gold-vs-gold = 100%). *Falta só o smoke test de inferência real (precisa do servidor vLLM na GPU).*
-- [ ] **Dias 4–5 — Baseline:** reprodução por dificuldade vs. paper.
-- [ ] **Dias 6–7 — Ablation:** 5 configurações (Tabela 5).
-- [ ] **Dias 8–9 — Extensão A:** comparação de 3 backbones.
-- [ ] **Dias 10–11 — Extensão B:** robustez (temperature × #few-shot, N=5).
-- [ ] **Dias 12–13 — Estatística:** McNemar, Bootstrap IC95%, Friedman+Holm, Cohen's h.
-- [ ] **Dia 14 — Entrega:** relatório técnico + repositório público.
+- [x] **Dias 4–5 — Baseline:** reprodução por dificuldade vs. paper.
+- [x] **Dias 6–7 — Ablation:** 5 configurações (Tabela 5).
+- [x] **Dias 8–9 — Extensão A:** comparação de 3 backbones.
+- [x] **Dias 10–11 — Extensão B:** robustez (temperature × #few-shot, N=5).
+- [x] **Dias 12–13 — Estatística:** McNemar, Bootstrap IC95%, Friedman+Holm, Cohen's h.
+- [x] **Dia 14 — Entrega:** relatório técnico + repositório público.
 
 ---
 
